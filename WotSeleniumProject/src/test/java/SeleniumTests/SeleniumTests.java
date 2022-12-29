@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -13,63 +14,164 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
 import HelperClasses.FileUtil;
 
 class SeleniumTests {
 
 	private static WebDriver webDriver;
 	private static String baseUrl;
+	private static WebDriverWait wait;
 
 	@BeforeAll
 	static void setUpBeforeClass() throws Exception {
 		System.setProperty("webdriver.chrome.driver", "../selenium chrome driver/chromedriver.exe");
-		
+
 		ChromeOptions options = new ChromeOptions();
 		options.addArguments("--start-maximized");
-		//options.addArguments("--window-size=768,1024");
-		//options.addArguments("--headless");
-		
-		// options.addArguments("--user-data-dir=C:\\Users\\dzeni\\Desktop");		
-		
+		// options.addArguments("--window-size=768,1024");
+		// options.addArguments("--headless");
+
+		// options.addArguments("--user-data-dir=C:\\Users\\dzeni\\Desktop");
+
 		webDriver = new ChromeDriver(options);
 		baseUrl = "https://worldoftanks.eu/";
+		wait = new WebDriverWait(webDriver, Duration.ofSeconds(10));
 	}
 
 	@AfterAll
 	static void tearDownAfterClass() throws Exception {
 		webDriver.quit();
 	}
-	
+
 	@Test
 	@Disabled
-	// Interactive test (download might need to be accepted) 
+	// Interactive test (download might need to be accepted)
 	// Test passed
-	void downloadTest() throws InterruptedException, IOException
-	{
+	void downloadTest() throws InterruptedException, IOException {
 		webDriver.get(baseUrl);
-		// Close the promo div 
+		// Close the promo div
 		webDriver.findElement(By.xpath("/html/body/div[1]/div/div[4]/div/section[1]/div[3]/button[2]")).click();
-		
+
 		// Go to the download page
 		webDriver.findElement(By.xpath("/html/body/div[1]/div/div[2]/div/ul/li[2]/a/span")).click();
 		webDriver.findElement(By.linkText("Download Game")).click();
-		
+
 		// Download the game
 		webDriver.findElement(By.xpath("/html/body/div[1]/div/div[4]/div[1]/div/div[3]/div[2]/a[1]/span")).click();
 		// Allow the tester to accept the "risky file"
 		Thread.sleep(3000);
-		
-		// Check if the file was downloaded 
+
+		// Check if the file was downloaded
 		// The file will be deleted in .checkFileDownload()
-		// Since the filename is randomised often, the function calls .contains() 
-		boolean fileFound = FileUtil.checkFileDownload("C:\\Users\\dzeni\\Downloads",
-				"world_of_tanks_install_eu", ".exe", 10000, 3000);
+		// Since the filename is randomised often, the function calls .contains()
+		boolean fileFound = FileUtil.checkFileDownload("C:\\Users\\dzeni\\Downloads", "world_of_tanks_install_eu",
+				".exe", 10000, 3000);
 
 		// True
-		assertTrue(fileFound); 
-		
+		assertTrue(fileFound);
+
+		Thread.sleep(2000);
+	}
+
+	@Test
+	@Disabled
+	void checkMapLeaderboardIfFrozenRedirectTest() {
+		webDriver.get(baseUrl);
+		// Close the promo div
+		webDriver.findElement(By.xpath("/html/body/div[1]/div/div[4]/div/section[1]/div[3]/button[2]")).click();
+
+		// Save the handle of the first tab to enable switching to the second
+		String handle1 = webDriver.getWindowHandle();
+
+		// Go to the download page
+		webDriver.findElement(By.xpath("/html/body/div[1]/div/div[2]/div/ul/li[4]/a/span")).click();
+		webDriver.findElement(By.linkText("Global Map")).click();
+
+		for (String handle : webDriver.getWindowHandles()) {
+			if (!handle.equals(handle1)) {
+				webDriver.switchTo().window(handle);
+				break;
+			}
+		}
+
+		// if the map is currently frozen, check if the leaderboards are paused
+		WebElement frozenMapParagraph = wait.until(
+				ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div[8]/div/div/div/div/div/p")));
+
+		boolean mapFrozen = frozenMapParagraph.getText().contains("The Global Map is temporarily frozen.");
+		webDriver.findElement(By.xpath("/html/body/div[8]/div/div/div/button")).click();
+
+		// if map is frozen, go to the leaderboard & check if the event is finished
+		if (mapFrozen) {
+			WebElement acceptCookies = webDriver.findElement(By.xpath("/html/body/article/div/button"));
+			acceptCookies.click();
+
+			webDriver.findElement(By.xpath("/html/body/div[17]/div/div[1]/button")).click();
+			WebElement subtitle = webDriver.findElement(By.xpath("/html/body/div[7]/div/div[1]/div/div[2]/div/h3"));
+			assertEquals("event finished", subtitle.getText().toLowerCase());
+		}
+		// if the map is unfrozen test automatically passed
+		// (the map won't unfreeze for a long time so I can't set other conditions)
+	}
+
+	@Test
+	@Disabled
+	// For this test to work, the map probably has to be frozen so that the "Go to
+	// the map" button is visible
+	void languageOnFrozenGlobalMapChange() throws InterruptedException, IOException {
+		webDriver.get("https://eu.wargaming.net/globalmap/");
+
+		// "Go to the map" button (if map is not frozen, it might not be present
+		WebElement exitNotification = wait
+				.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div[8]/div/div/div/button")));
+		exitNotification.click();
+		WebElement acceptCookies = webDriver.findElement(By.xpath("/html/body/article/div/button"));
+		acceptCookies.click();
+
+		WebElement settingsButton = webDriver.findElement(By.xpath("/html/body/div[16]/button"));
+		settingsButton.click();
+		WebElement languageDivDropdown = webDriver.findElement(
+				By.xpath("/html/body/div[8]/div/div/div/div/div/div/table/tbody[1]/tr/td[2]/div/div[2]/button"));
+		languageDivDropdown.click();
+		WebElement germanLanguage = webDriver.findElement(By.xpath(
+				"/html/body/div[8]/div/div/div/div/div/div/table/tbody[1]/tr/td[2]/div/div[3]/div/div[1]/div[2]/div/span/span"));
+		germanLanguage.click();
+		WebElement closeButton = webDriver.findElement(By.xpath("/html/body/div[8]/div/div/div/div/footer/div/button"));
+		// closing the div reloads the page with the new language
+		closeButton.click();
+
+		exitNotification = wait
+				.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div[8]/div/div/div/button")));
+		exitNotification.click();
+
+		// check if the language was changed successfully
+		WebElement playerSupportSpan = webDriver.findElement(By.xpath("/html/body/div[1]/div/div[1]/div[4]/a[2]/span"));
+		assertEquals("Spieler Support", playerSupportSpan.getText());
+		// repeat the process to change the language back to English
+
+		settingsButton = webDriver.findElement(By.xpath("/html/body/div[16]/button"));
+		settingsButton.click();
+		languageDivDropdown = webDriver.findElement(
+				By.xpath("/html/body/div[8]/div/div/div/div/div/div/table/tbody[1]/tr/td[2]/div/div[2]/button"));
+		languageDivDropdown.click();
+		WebElement englishLanguage = webDriver.findElement(By.xpath(
+				"/html/body/div[8]/div/div/div/div/div/div/table/tbody[1]/tr/td[2]/div/div[3]/div/div[1]/div[1]/div/span/span"));
+		englishLanguage.click();
+		closeButton = webDriver.findElement(By.xpath("/html/body/div[8]/div/div/div/div/footer/div/button"));
+		// closing the div reloads the page with the new language
+		closeButton.click();
+		exitNotification = wait
+				.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div[8]/div/div/div/button")));
+		exitNotification.click();
+		playerSupportSpan = webDriver.findElement(By.xpath("/html/body/div[1]/div/div[1]/div[4]/a[2]/span"));
+		assertEquals("Player Support", playerSupportSpan.getText());
+
 		Thread.sleep(2000);
 	}
 }
