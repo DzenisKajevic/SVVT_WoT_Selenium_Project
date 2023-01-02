@@ -15,6 +15,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.interactions.Action;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -33,7 +35,7 @@ class TestsWithLogin {
 		
 		webDriver = new ChromeDriver(options);
 		baseUrl = "https://worldoftanks.eu/";
-		wait = new WebDriverWait(webDriver, Duration.ofSeconds(30));
+		wait = new WebDriverWait(webDriver, Duration.ofSeconds(60));
 	}
 
 	@AfterAll
@@ -121,7 +123,38 @@ class TestsWithLogin {
 	
 		WebElement h3ErrorMessage = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div[2]/div/div/div[3]")));
 		assertTrue(h3ErrorMessage.getText().contains("Invalid code. Please make sure you entered the correct code"));
-		Thread.sleep(3000);
+		Thread.sleep(2000);
 	}
 
+	// succeeds if the number of played battles is less than the required amount for becoming a referrer (600 atm)
+	@Test
+	void accountTooYoungForReferralTest() throws InterruptedException {
+		webDriver.findElement(By.xpath("/html/body/div[1]/div/div[2]/div/ul/li[6]/a/span")).click();
+		webDriver.findElement(By.xpath("/html/body/div[1]/div/div[2]/div/ul/li[6]/div/ul/li[3]/a")).click();
+		WebElement unavailableParagraph = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div[1]/div/div[4]/div[1]/div/div/div[1]/article/section/div[3]/div[2]/p[1]")));
+		
+		assertEquals("The referral link is unavailable", unavailableParagraph.getText());
+		if(unavailableParagraph.getText().equals("The referral link is unavailable")) {
+			WebElement minimumMatchesParagraph = webDriver.findElement(By.xpath("/html/body/div[1]/div/div[4]/div[1]/div/div/div[1]/article/section/div[3]/div[2]/p[3]/span"));
+			int minimumMatchesPlayed = Integer.parseInt(minimumMatchesParagraph.getText());
+			
+			WebElement community = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div[1]/div/div[2]/div/ul/li[6]/a/span")));
+			community.click();
+			
+			webDriver.findElement(By.xpath("/html/body/div[1]/div/div[2]/div/ul/li[6]/div/ul/li[1]/a")).click();
+			int matchesPlayed = Integer.parseInt(webDriver.findElement(
+					By.xpath("/html/body/div[1]/div/div[4]/div[1]/section[3]/div[2]/div/div[2]/div[2]/span[1]")).getText());
+			
+			assertTrue(matchesPlayed < minimumMatchesPlayed);
+		}
+		Thread.sleep(2000);
+	}
+	
+	// 10th test
+	@Test 
+	@Disabled
+	void createClan() throws InterruptedException {
+		
+		Thread.sleep(2000);
+	}
 }
