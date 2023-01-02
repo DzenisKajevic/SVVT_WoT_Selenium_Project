@@ -283,4 +283,50 @@ class SeleniumTests {
 		
 		Thread.sleep(2000);
 	}
+	
+	@Test
+	@Disabled
+	// DoB can be changed once per day, so this test most likely won't be able to run again
+	// Succeeded first try
+	void removeBirthDate() throws InterruptedException {
+		///////////////////////////
+		// login
+		webDriver.get(baseUrl);
+		// Close the promo div
+		webDriver.findElement(By.xpath("/html/body/div[1]/div/div[4]/div/section[1]/div[3]/button[2]")).click();
+		
+		// go to login page
+		webDriver.findElement(By.xpath("/html/body/div[1]/div/div[3]/div[1]/div/div[1]/div[1]/a[1]")).click();
+		
+		WebElement email = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("id_login")));
+		WebElement password = webDriver.findElement(By.id("id_password"));
+		email.sendKeys("kanes248751@dentaltz.com");
+		password.sendKeys("burnerPassword_123");
+		
+		// submit form
+		webDriver.findElement(By.xpath("/html/body/div[1]/div/div[3]/div/div/div/div[1]/span/form/div/fieldset[2]/span[1]/button/span")).click();
+		
+		WebElement usernameTopRight = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div[1]/div/div[3]/div[1]/div/div[1]/div[1]/a[2]/span[3]")));
+		////////////////////////////
+		
+		// change date of birth
+		usernameTopRight.click();
+		webDriver.findElement(By.xpath("/html/body/div[1]/div/div[3]/div[1]/div/div[1]/div[1]/div[2]/div/div[3]/ul/li[1]/a/span")).click();
+		
+		WebElement changeDateButton = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div[1]/div/div/div[2]/div/div[2]/div[1]/div[1]/div/div/div[2]/div/div[3]/div/a")));
+		changeDateButton.click();
+		
+		WebElement removeDateButton = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div[1]/div/div/div[2]/div/div/fieldset[1]/div[2]/a")));
+		removeDateButton.click();
+		
+		// save
+		webDriver.findElement(By.xpath("/html/body/div[1]/div/div/div[2]/div/div/fieldset[2]/button")).click();
+		
+		WebElement DoB = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div[1]/div/div/div[2]/div/div[2]/div[1]/div[1]/div/div/div[2]/div/div[2]/div/span")));
+		
+		System.out.println(DoB.getText());
+		assertEquals("", DoB.getText());
+		
+		Thread.sleep(2000);
+	}
 }
