@@ -187,8 +187,8 @@ class SeleniumTests {
 		WebElement password = webDriver.findElement(By.id("id_password"));
 		WebElement confirmPassword = webDriver.findElement(By.id("id_re_password"));
 		
-		email.sendKeys("kanes248751@dentaltz.com");
-		name.sendKeys("burnerName12094911");
+		email.sendKeys("kanes2487511@dentaltz.com");
+		name.sendKeys("burnerName120949111");
 		password.sendKeys("burnerPassword_123");
 		confirmPassword.sendKeys("burnerPassword_123");
 		
