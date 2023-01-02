@@ -244,11 +244,43 @@ class SeleniumTests {
 		WebElement usernameTopRight = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div[1]/div/div[3]/div[1]/div/div[1]/div[1]/a[2]/span[3]")));
 		
 		assertEquals("burnerName12094911", usernameTopRight.getText());
+		
+		Thread.sleep(2000);
 	}
 	
 	@Test
 	@Disabled
 	void redirectToYoutubeChannel() throws InterruptedException {
+		webDriver.get(baseUrl);
 		
+		// Close the promo div
+		webDriver.findElement(By.xpath("/html/body/div[1]/div/div[4]/div/section[1]/div[3]/button[2]")).click();
+
+		WebElement youtubeLink = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div[1]/div/div[5]/div[1]/div/a[2]")));
+		
+		Actions builder = new Actions(webDriver);
+		Action scrollToYTLink = 
+				builder
+					.moveToElement(youtubeLink)
+					.build();
+		
+		scrollToYTLink.perform();
+		
+		youtubeLink.click();
+		
+		// Save the handle of the first tab to enable switching to the second
+		String handle1 = webDriver.getWindowHandle();
+
+		for (String handle : webDriver.getWindowHandles()) {
+			if (!handle.equals(handle1)) {
+				webDriver.switchTo().window(handle);
+				break;
+			}
+		}
+			
+		String currentUrl = webDriver.getCurrentUrl();
+		assertEquals("https://www.youtube.com/@WorldOfTanksOfficialChannel", currentUrl);
+		
+		Thread.sleep(2000);
 	}
 }
