@@ -43,7 +43,7 @@ class SeleniumTests {
 
 		webDriver = new ChromeDriver(options);
 		baseUrl = "https://worldoftanks.eu/";
-		wait = new WebDriverWait(webDriver, Duration.ofSeconds(10));
+		wait = new WebDriverWait(webDriver, Duration.ofSeconds(30));
 	}
 
 	@AfterAll
@@ -226,6 +226,29 @@ class SeleniumTests {
 	@Test
 	@Disabled
 	void login() throws InterruptedException {
+		webDriver.get(baseUrl);
+		// Close the promo div
+		webDriver.findElement(By.xpath("/html/body/div[1]/div/div[4]/div/section[1]/div[3]/button[2]")).click();
+		
+		// go to login page
+		webDriver.findElement(By.xpath("/html/body/div[1]/div/div[3]/div[1]/div/div[1]/div[1]/a[1]")).click();
+		
+		WebElement email = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("id_login")));
+		WebElement password = webDriver.findElement(By.id("id_password"));
+		email.sendKeys("kanes248751@dentaltz.com");
+		password.sendKeys("burnerPassword_123");
+		
+		// submit form
+		webDriver.findElement(By.xpath("/html/body/div[1]/div/div[3]/div/div/div/div[1]/span/form/div/fieldset[2]/span[1]/button/span")).click();
+		
+		WebElement usernameTopRight = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div[1]/div/div[3]/div[1]/div/div[1]/div[1]/a[2]/span[3]")));
+		
+		assertEquals("burnerName12094911", usernameTopRight.getText());
+	}
+	
+	@Test
+	@Disabled
+	void redirectToYoutubeChannel() throws InterruptedException {
 		
 	}
 }
