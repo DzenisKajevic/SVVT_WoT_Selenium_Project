@@ -15,8 +15,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.interactions.Action;
-import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -128,7 +126,8 @@ class TestsWithLogin {
 
 	// succeeds if the number of played battles is less than the required amount for becoming a referrer (600 atm)
 	@Test
-	void accountTooYoungForReferralTest() throws InterruptedException {
+	@Disabled
+	void accountTooYoungForReferringTest() throws InterruptedException {
 		webDriver.findElement(By.xpath("/html/body/div[1]/div/div[2]/div/ul/li[6]/a/span")).click();
 		webDriver.findElement(By.xpath("/html/body/div[1]/div/div[2]/div/ul/li[6]/div/ul/li[3]/a")).click();
 		WebElement unavailableParagraph = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div[1]/div/div[4]/div[1]/div/div/div[1]/article/section/div[3]/div[2]/p[1]")));
@@ -150,10 +149,48 @@ class TestsWithLogin {
 		Thread.sleep(2000);
 	}
 	
-	// 10th test
-	@Test 
-	@Disabled
-	void createClan() throws InterruptedException {
+	// Clan applications can't be cancelled, so in order to run this test, a new clan name will have to be entered
+	@Test
+	void applyForClanAndVerifyTheApplication() throws InterruptedException {
+		webDriver.findElement(By.xpath("/html/body/div[1]/div/div[2]/div/ul/li[4]/a")).click();
+		WebElement inputClanName = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div[1]/div/div[4]/div[2]/article/div/header/form/div/div/div/input[1]")));
+		inputClanName.sendKeys("zZzZz");
+		String handle1 = webDriver.getWindowHandle();
+
+		webDriver.findElement(By.xpath("/html/body/div[1]/div/div[4]/div[2]/article/div/header/form/div/div/input")).click();
+		
+		for (String handle : webDriver.getWindowHandles()) {
+			if (!handle.equals(handle1)) {
+				webDriver.switchTo().window(handle);
+				break;
+			}
+		}
+		
+		////////////////////
+		// login on the second page
+		webDriver.findElement(By.xpath("/html/body/div[1]/div[1]/div/div[1]/div[1]/a[1]")).click();
+		////////////////////
+		
+		WebElement clanNameInput = webDriver.findElement(By.xpath("/html/body/div[1]/div[3]/form/div[2]/div/div[2]/input"));
+		clanNameInput.sendKeys("zZzZz");
+		webDriver.findElement(By.xpath("/html/body/div[1]/div[3]/form/button/span[2]")).click();
+		
+		
+		WebElement clan = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div[1]/div[3]/div[2]/div[1]/div/div[2]/div[3]/div/div[2]/div/div[2]/div[2]/div[2]/div/span[2]/span[1]/span/span[2]")));
+		clan.click();
+		
+		WebElement textArea = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div[1]/div[3]/div[2]/div[1]/div/div[2]/div[3]/div/div[2]/div/div[2]/div[3]/div/div[2]/div[1]/div/div[3]/div/div[1]/textarea")));
+		textArea.sendKeys("Automated testing. Do not accept");
+		
+		webDriver.findElement(By.xpath("/html/body/div[1]/div[3]/div[2]/div[1]/div/div[2]/div[3]/div/div[2]/div/div[2]/div[3]/div/div[2]/div[1]/div/div[3]/div/div[3]/button/span")).click();
+		
+		Thread.sleep(2000);
+		
+		webDriver.get("https://eu.wargaming.net/clans/wot/find_clan/");
+		webDriver.findElement(By.xpath("/html/body/div[1]/div[3]/div[2]/div[1]/div/ul/li[2]/label")).click();
+		
+		WebElement clanApplication = webDriver.findElement(By.xpath("/html/body/div[1]/div[3]/div[2]/div[1]/div/div[2]/div[2]/div[4]/div/div[3]/div[2]/div[1]/div[2]/div[1]/div[2]/div/div[2]/span[1]/span/span[2]"));
+		assertEquals("zZzZz", "zZzZz");
 		
 		Thread.sleep(2000);
 	}
