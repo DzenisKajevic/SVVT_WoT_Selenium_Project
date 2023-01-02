@@ -17,6 +17,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.interactions.Action;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -173,5 +175,57 @@ class SeleniumTests {
 		assertEquals("Player Support", playerSupportSpan.getText());
 
 		Thread.sleep(2000);
+	}
+	
+	@Test
+	@Disabled
+	void register() throws InterruptedException {
+		webDriver.get(baseUrl);
+		webDriver.findElement(By.xpath("/html/body/div[1]/div/div[4]/div/section[1]/div[3]/div[1]/div/div/a[1]")).click();
+		WebElement email = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("id_login")));
+		WebElement name = webDriver.findElement(By.id("id_name"));
+		WebElement password = webDriver.findElement(By.id("id_password"));
+		WebElement confirmPassword = webDriver.findElement(By.id("id_re_password"));
+		
+		email.sendKeys("kanes248751@dentaltz.com");
+		name.sendKeys("burnerName12094911");
+		password.sendKeys("burnerPassword_123");
+		confirmPassword.sendKeys("burnerPassword_123");
+		
+		// Accept privacy policy
+		webDriver.findElement(By.id("onetrust-accept-btn-handler")).click();
+		
+		// Accept EULA
+		WebElement EULA = webDriver.findElement(By.xpath("/html/body/div[1]/div/div/div[3]/div[6]/form/fieldset[7]/ul/li[1]/label"));
+		WebElement submitButton = webDriver.findElement(By.xpath("/html/body/div[1]/div/div/div[3]/div[6]/form/fieldset[8]/button/span"));
+		
+		Actions builder = new Actions(webDriver);
+		Action scrollToSubmit = 
+				builder
+					.moveToElement(submitButton)
+					.build();
+		
+		scrollToSubmit.perform();
+		
+		EULA.click();
+		
+		// wait until the EULA is accepted (otherwise it will try to submit the form 
+		// before it gets accepted
+		// wait.until(Expec... .elementSelectionStateToBe() does not work, swapping to sleep()
+		Thread.sleep(1000);
+		
+		// Submit form
+		submitButton.click();
+		
+		WebElement successHeading = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div[1]/div/div/div[3]/div[3]/h1")));
+		assertEquals("account created", successHeading.getText().toLowerCase());
+		
+		Thread.sleep(2000);
+	}
+	
+	@Test
+	@Disabled
+	void login() throws InterruptedException {
+		
 	}
 }
