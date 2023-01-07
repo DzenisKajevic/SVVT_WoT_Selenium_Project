@@ -190,7 +190,7 @@ class TestsWithLogin {
 		webDriver.findElement(By.xpath("/html/body/div[1]/div[3]/div[2]/div[1]/div/ul/li[2]/label")).click();
 		
 		WebElement clanApplication = webDriver.findElement(By.xpath("/html/body/div[1]/div[3]/div[2]/div[1]/div/div[2]/div[2]/div[4]/div/div[3]/div[2]/div[1]/div[2]/div[1]/div[2]/div/div[2]/span[1]/span/span[2]"));
-		assertEquals("zZzZz", "zZzZz");
+		assertEquals("zZzZz", clanApplication.getText());
 		
 		Thread.sleep(2000);
 	}
